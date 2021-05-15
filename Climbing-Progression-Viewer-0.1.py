@@ -20,7 +20,54 @@ global comment_entry_edit
 global input_id_entry
 global edit_window
 
-ascents_list = []
+ascents_list_id = []
+
+
+# render see all ascents view
+def show_all_records():
+    # crating our sll records view
+    all_results_window = Tk()
+    all_results_window.title("All records")
+    all_results_window.attributes("-topmost", True)
+
+    # creating scrollbar so that we can scroll in our window if we need to
+    scrollbar = Scrollbar(all_results_window)
+    # I don't know why but with grid is not working?
+    scrollbar.pack(side=RIGHT, fill=Y)
+    # Creating listbox that will contain all the records we have, yscrollcommand is like command and
+    # .set is the method that we use to attach the scrollbar to the listbox
+    all_results_listbox = Listbox(all_results_window, font=20, yscrollcommand=scrollbar.set)
+
+    # Creating db
+    connection = sqlite3.connect("Climbing progression data.db")
+
+    # Creating our cursor
+    cursor = connection.cursor()
+
+    # we select everything from climbing_info table and oid
+    cursor.execute("SELECT *, oid FROM climbing_info")
+
+    # record is list that contains all our records info
+    # this loop is mainly for formatting
+    records = cursor.fetchall()
+    for record in records:
+        record = f" ID num: {record[7]} " \
+                 f"Route: {record[2]}," \
+                 f" Date: {record[3]}," \
+                 f" Style: {record[4]}," \
+                 f" Grade: {record[5]}"
+
+        all_results_listbox.insert(END, record)
+
+    # i don't know why but with grid is not working?
+    all_results_listbox.pack(side=LEFT, fill=BOTH, expand=True, ipadx=200)
+
+    # config method to give functionality to our scrollbar
+    scrollbar.config(command=all_results_listbox.yview)
+    all_results_window.mainloop()
+
+    connection.commit()
+    connection.close()
 
 
 # function behind our top_rope_info_button.
@@ -108,13 +155,38 @@ def get_red_point_info():
 
 
 # creating function that open new window when we hit the review ascent button.
-def review_ascents(variable):
-    review_ascent = Tk()
-    # see_data_window.geometry("500x500")
-    review_ascent.title("Review ascent")
-    # we create single label on that window showing us with big font the ascent we picked
-    label = Label(review_ascent, text=variable, font=25)
-    label.grid(row=0, column=0)
+def review_ascents():
+    record_id = input_id_entry.get()
+    if record_id:
+        if check_for_element_in_db(record_id):
+            review_ascent = Tk()
+            # see_data_window.geometry("500x500")
+            review_ascent.title("Review ascent")
+            review_ascent.attributes("-topmost", True)
+            # Creating db
+
+            connection = sqlite3.connect("Climbing progression data.db")
+            # Creating our cursor
+
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM climbing_info WHERE oid = " + record_id)
+            results = cursor.fetchall()
+
+            for result in results:
+                formatted_result = f"City:{result[0]}, Sector:{result[1]}, Route:{result[2]}, Date:{result[3]}, Style:{result[4]}, Grade:{result[5]}, Comment:{result[6]}"
+                label = Label(review_ascent, text=formatted_result, font=25)
+
+                label.grid(row=0, column=0)
+
+            connection.commit()
+            connection.close()
+            # if we don't have such ID in our records we put popup message to explain to the user what is wrong
+        else:
+            messagebox.showinfo("Error", "There is no such ID in the records!!\nTry with another ID")
+
+    # if we don't have filled id_entry from our user we put popup message to inform the user what is happening
+    else:
+        messagebox.showinfo("Error", "You have to add ascent's ID.\nClick see records to get the ID number.")
 
 
 # function too see if we have records in our ascent's list
@@ -146,10 +218,10 @@ def check_for_element_in_db(number):
     results = cursor.fetchall()
     number = int(number)
     for result in results:
-        ascents_list.append(result[0])
+        ascents_list_id.append(result[0])
     connection.commit()
     connection.close()
-    if number in ascents_list:
+    if number in ascents_list_id:
         return True
     return False
 
@@ -195,7 +267,7 @@ def save_changes():
     connection = sqlite3.connect("Climbing progression data.db")
     # Creating our cursor
     cursor = connection.cursor()
-    record_id = add_id_entry.get()
+    record_id = input_id_entry.get()
     # this is the way to update db in sql3
     cursor.execute("""UPDATE climbing_info SET
                     city = :city,
@@ -360,18 +432,19 @@ def render_edit_view():
     global comment_entry_edit
     global input_id_entry
     global edit_window
-    record_id = add_id_entry.get()
+    record_id = input_id_entry.get()
     # we make if statement to see if we have smt in our add_id_entry
 
     if record_id:
         # if the user added some number to the add_id_entry we check if the current id exist in our records
 
-        if check_for_element_in_db(add_id_entry.get()):
+        if check_for_element_in_db(input_id_entry.get()):
             # if the id number from our user input is valid we create our edit view
 
             edit_window = Tk()
             edit_window.title("Edit ascent")
             edit_window.geometry("400x400")
+            edit_window.attributes("-topmost", True)
 
             # Creating db
 
@@ -445,69 +518,57 @@ def render_edit_view():
 
 
 def render_see_record_view():
+    global input_id_entry
     if check_for_records():
         see_data_window = Tk()
-        see_data_window.title("All data")
+        see_data_window.title("Climbing data")
+        see_data_window.attributes("-topmost", True)
 
-        # Creating db
-        connection = sqlite3.connect("Climbing progression data.db")
-
-        # Creating our cursor
-        cursor = connection.cursor()
-
-        # we select everything from climbing_info table and oid
-        cursor.execute("SELECT *, oid FROM climbing_info")
-
-        # record is list that contains all our records info
-        records = cursor.fetchall()
-
-        # we create empty list where we are going to collect our formatted info
-        list = []
-
-        # for cycle to format the info and then append the formatted info in our list
-        for record in records:
-            current_record = f"City: {record[0]}, " \
-                             f"Sector: {record[1]}," \
-                             f"Route: {record[2]}, " \
-                             f"Ascent: {record[3]}, " \
-                             f"Style: {record[4]}, " \
-                             f"Grade: {record[5]}, " \
-                             f"Comment: {record[6]}, " \
-                             f"Record ID: {record[7]}"
-
-            list.append(current_record)
-
-        # we set variable that holds what we pick from our dropdown menu
-        var = StringVar()
-
-        # we set it to be the first value in our list as a default
-        var.set(list[0])
-
-        # creating our dropdown menu that contains all of our added ascents(records)
-        dropdown_for_all_ascents = OptionMenu(see_data_window, var, *list)
-        dropdown_for_all_ascents.grid(row=0, column=0, ipadx=20, pady=10, padx=10)
+        # all ascents button
+        # TODO CHECK WHAT YOU HAVE DONE HERE !!!
+        show_all_ascents_button = Button(see_data_window, text="All ascents", width=11, borderwidth=4,
+                                         command=show_all_records)
+        show_all_ascents_button.grid(row=0, column=0, pady=10, padx=10)
 
         # we create button to review what we pick from the dropdown menu. The value is in our StringVar variable
         button_for_review = Button(see_data_window, text="Review ascent", borderwidth=4,
-                                   command=lambda: review_ascents(var.get()))
+                                   command=review_ascents)
         button_for_review.grid(row=0, column=1, pady=10, padx=10)
 
         # creating button to close the window
         close_window_button = Button(see_data_window, text="Close window", borderwidth=4,
                                      command=lambda: close_view(see_data_window))
-        close_window_button.grid(row=2, column=1, pady=10, padx=10)
+        close_window_button.grid(row=4, column=1, pady=10, padx=10)
+        # creating buttons for info
         check_info_for_rp_btn = Button(see_data_window, text="Red Point info", width=10, borderwidth=4,
                                        command=get_red_point_info)
-        check_info_for_rp_btn.grid(row=1, column=0, pady=10, padx=10, ipadx=3)
+        check_info_for_rp_btn.grid(row=2, column=0, pady=10, padx=10, ipadx=3)
 
         check_info_for_tp_btn = Button(see_data_window, text="Top Rope info", width=10, borderwidth=4,
                                        command=get_top_rope_info)
-        check_info_for_tp_btn.grid(row=1, column=1, pady=10, padx=10, ipadx=3)
+        check_info_for_tp_btn.grid(row=2, column=1, pady=10, padx=10, ipadx=3)
 
-        # Commit changes to our db
-        connection.commit()
-        # Closing our db
-        connection.close()
+        # creating edit button
+        button_for_edit = Button(see_data_window, text="Edit ascent", width=11, borderwidth=4, command=render_edit_view)
+        button_for_edit.grid(row=3, column=0, pady=10, padx=10)
+
+        # creating label for ascent's id
+        input_id_label = Label(see_data_window, text="Enter ID:", width=10, borderwidth=4)
+        input_id_label.grid(row=1, column=0, pady=10, padx=10)
+
+        # creating entry field to get the input id that the user will want to work with
+        input_id_entry = Entry(see_data_window, width=13, borderwidth=4)
+        input_id_entry.grid(row=1, column=1, pady=10, padx=10)
+
+        # creating button for deleting ascent
+        delete_ascent_button = Button(see_data_window, text="Delete ascent", width=11, borderwidth=4,
+                                      command=delete_ascent)
+        delete_ascent_button.grid(row=3, column=1, pady=10, padx=10)
+
+        # creating button to delete all history
+        clear_all_ascents_btn = Button(see_data_window, text="Clear history", width=12, borderwidth=4, bg="#ff5c5c",
+                                       command=clearing_record)
+        clear_all_ascents_btn.grid(row=4, column=0, pady=10, padx=10)
 
         see_data_window.mainloop()
     else:
@@ -528,31 +589,19 @@ def render_add_ascent_window():
 
 # Function to render main view. Good if we want to go back to the main view
 def render_main_view():
-    global input_id_entry
-
     # creating labels for main view
-    id_label = Label(main_window, text="Enter ascent's ID:")
-    id_label.grid(row=3, column=0, padx=10, pady=10)
     welcome_label = Label(main_window, text="Climb smart or die trying" + "\n" + "beta 0.1", font=25)
     welcome_label.grid(row=0, column=0, columnspan=2, padx=125)
 
     # creating buttons for our main view
     add_ascent_button = Button(main_window, text="Add ascent", borderwidth=4, command=render_add_ascent_window)
-    add_ascent_button.grid(row=1, column=0, pady=10, padx=10, ipadx=50)
+    add_ascent_button.grid(row=1, column=1, pady=10, padx=10, ipadx=50)
     view_records_button = Button(main_window, text="See ascents", borderwidth=4, command=render_see_record_view)
-    view_records_button.grid(row=2, column=0, pady=10, padx=10, ipadx=50)
-    clear_records_button = Button(main_window, text="Clear history", borderwidth=4, bg="#ff5c5c",
-                                  command=clearing_record)
-    clear_records_button.grid(row=5, column=1, pady=10, padx=10, ipadx=48)
-    edit_button = Button(main_window, text="Edit ascent", borderwidth=4, command=render_edit_view)
-    edit_button.grid(row=4, column=0, pady=10, padx=10, ipadx=53)
-
-    delete_ascent_button = Button(main_window, text="Delete ascent", borderwidth=4, command=delete_ascent)
-    delete_ascent_button.grid(row=4, column=1, pady=10, padx=10, ipadx=47)
-
-    # creating id entry for the user
-    add_id_entry = Entry(main_window, width=28, borderwidth=4)
-    add_id_entry.grid(row=3, column=1, pady=10)
+    view_records_button.grid(row=1, column=0, pady=10, padx=10, ipadx=50)
+    workout_button = Button(main_window, text="Training", borderwidth=4)
+    workout_button.grid(row=2, column=1, pady=10, padx=10, ipadx=58)
+    projects_button = Button(main_window, text="Projects", borderwidth=4)
+    projects_button.grid(row=2, column=0, pady=10, padx=10, ipadx=58)
 
 
 # From here our program start
@@ -582,4 +631,3 @@ if __name__ == '__main__':
     connection.close()
     check_for_records()
     main_window.mainloop()
-
