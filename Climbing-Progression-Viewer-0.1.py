@@ -221,7 +221,7 @@ def check_for_element_in_db(number):
         ascents_list_id.append(result[0])
     connection.commit()
     connection.close()
-    print(results)
+
     if number in ascents_list_id:
         ascents_list_id.clear()
         return True
@@ -605,7 +605,7 @@ def render_main_view():
     workout_button.grid(row=2, column=1, pady=10, padx=10, ipadx=58)
     projects_button = Button(main_window, text="Projects", borderwidth=4)
     projects_button.grid(row=2, column=0, pady=10, padx=10, ipadx=58)
-    print(ascents_list_id)
+
 
 
 # From here our program start
