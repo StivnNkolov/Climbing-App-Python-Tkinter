@@ -221,7 +221,7 @@ def check_for_element_in_db(number):
         ascents_list_id.append(result[0])
     connection.commit()
     connection.close()
-    
+    print(results)
     if number in ascents_list_id:
         ascents_list_id.clear()
         return True
@@ -305,7 +305,7 @@ def check_if_we_have_smt_in_the_fields():
 
 # We make sure to ask for confirmation to delete
 # function behind our clear_history_button. It will clear all of our data.
-def clearing_record():
+def clearing_record(wnd):
     response = messagebox.askokcancel("Confirmation", "You are going to permanently delete your history." "\n"
                                                       "Are you sure you want to do this?")
     if response:
@@ -321,6 +321,7 @@ def clearing_record():
         # Closing our db
         connection.close()
         messagebox.showinfo("Notification", "Your history is clear !!")
+        close_view(wnd)
 
 
 # function to use when we want to destroy some window
@@ -569,7 +570,7 @@ def render_see_record_view():
 
         # creating button to delete all history
         clear_all_ascents_btn = Button(see_data_window, text="Delete history", width=11, borderwidth=4, bg="#ff5c5c",
-                                       command=clearing_record)
+                                       command=lambda :clearing_record(see_data_window))
         clear_all_ascents_btn.grid(row=4, column=0, pady=10, padx=10)
 
         see_data_window.mainloop()
@@ -604,7 +605,7 @@ def render_main_view():
     workout_button.grid(row=2, column=1, pady=10, padx=10, ipadx=58)
     projects_button = Button(main_window, text="Projects", borderwidth=4)
     projects_button.grid(row=2, column=0, pady=10, padx=10, ipadx=58)
-
+    print(ascents_list_id)
 
 
 # From here our program start
