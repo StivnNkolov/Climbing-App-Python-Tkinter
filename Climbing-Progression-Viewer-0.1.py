@@ -221,7 +221,9 @@ def check_for_element_in_db(number):
         ascents_list_id.append(result[0])
     connection.commit()
     connection.close()
+    
     if number in ascents_list_id:
+        ascents_list_id.clear()
         return True
     return False
 
@@ -542,15 +544,15 @@ def render_see_record_view():
         # creating buttons for info
         check_info_for_rp_btn = Button(see_data_window, text="Red Point info", width=10, borderwidth=4,
                                        command=get_red_point_info)
-        check_info_for_rp_btn.grid(row=2, column=0, pady=10, padx=10, ipadx=3)
+        check_info_for_rp_btn.grid(row=3, column=0, pady=10, padx=10, ipadx=3)
 
         check_info_for_tp_btn = Button(see_data_window, text="Top Rope info", width=10, borderwidth=4,
                                        command=get_top_rope_info)
-        check_info_for_tp_btn.grid(row=2, column=1, pady=10, padx=10, ipadx=3)
+        check_info_for_tp_btn.grid(row=3, column=1, pady=10, padx=10, ipadx=3)
 
         # creating edit button
         button_for_edit = Button(see_data_window, text="Edit ascent", width=11, borderwidth=4, command=render_edit_view)
-        button_for_edit.grid(row=3, column=0, pady=10, padx=10)
+        button_for_edit.grid(row=2, column=0, pady=10, padx=10)
 
         # creating label for ascent's id
         input_id_label = Label(see_data_window, text="Enter ID:", width=10, borderwidth=4)
@@ -563,10 +565,10 @@ def render_see_record_view():
         # creating button for deleting ascent
         delete_ascent_button = Button(see_data_window, text="Delete ascent", width=11, borderwidth=4,
                                       command=delete_ascent)
-        delete_ascent_button.grid(row=3, column=1, pady=10, padx=10)
+        delete_ascent_button.grid(row=2, column=1, pady=10, padx=10)
 
         # creating button to delete all history
-        clear_all_ascents_btn = Button(see_data_window, text="Clear history", width=12, borderwidth=4, bg="#ff5c5c",
+        clear_all_ascents_btn = Button(see_data_window, text="Delete history", width=11, borderwidth=4, bg="#ff5c5c",
                                        command=clearing_record)
         clear_all_ascents_btn.grid(row=4, column=0, pady=10, padx=10)
 
@@ -602,6 +604,7 @@ def render_main_view():
     workout_button.grid(row=2, column=1, pady=10, padx=10, ipadx=58)
     projects_button = Button(main_window, text="Projects", borderwidth=4)
     projects_button.grid(row=2, column=0, pady=10, padx=10, ipadx=58)
+
 
 
 # From here our program start
