@@ -19,15 +19,27 @@ global grade_entry_edit
 global comment_entry_edit
 global input_id_entry
 global edit_window
+global connection
+global cursor
 
 ascents_list_id = []
 
 
-# render see all ascents view
+def formatting_input_data(info_list):
+    formatted_info = f"City:{info_list[0]}, " \
+                     f"Sector: {info_list[1]}, " \
+                     f"Route: {info_list[2]}, " \
+                     f"Ascent: {info_list[3]}," \
+                     f" Grade: {info_list[5]}, " \
+                     f"Comment: {info_list[6]}, " \
+                     f"ID: {info_list[7]} \n"
+    return formatted_info
 
 
 # function too see if we have records in our ascent's list
 def check_for_records():
+    global connection
+    global cursor
     # Creating db
     connection = sqlite3.connect("Climbing progression data.db")
     # Creating our cursor
@@ -46,6 +58,8 @@ def check_for_records():
 
 # function to make sure that we have such ID in our database
 def check_for_element_in_db(number):
+    global connection
+    global cursor
     # Creating db
     connection = sqlite3.connect("Climbing progression data.db")
     # Creating our cursor
@@ -67,11 +81,14 @@ def check_for_element_in_db(number):
 
 # function behind our delete ascent button
 def delete_ascent():
+    global connection
+    global cursor
     record_id = input_id_entry.get()
     if record_id:
         if check_for_element_in_db(record_id):
             response = messagebox.askyesno("Warning",
-                                           f"You are going to permanently delete\nascent with ID num: {input_id_entry.get()}.\nAre you sure you want to do this?")
+                                           f"You are going to permanently delete\nascent with ID num: "
+                                           f"{input_id_entry.get()}.\nAre you sure you want to do this?")
             if response:
                 # Creating db
                 connection = sqlite3.connect("Climbing progression data.db")
@@ -101,7 +118,10 @@ def save_info_from_add_ascent():
     global comment_entry_edit
     global input_id_entry
     global edit_window
-    if city_entry_edit.get() and sector_entry_edit.get() and route_entry_edit.get() and ascent_entry_edit.get() and style_entry_edit.get() and grade_entry_edit.get():
+    global connection
+    global cursor
+    if city_entry_edit.get() and sector_entry_edit.get() and route_entry_edit.get() and \
+            ascent_entry_edit.get() and style_entry_edit.get() and grade_entry_edit.get():
         # Creating db
         connection = sqlite3.connect("Climbing progression data.db")
         # Creating our cursor
@@ -140,6 +160,8 @@ def save_info_from_add_ascent():
 # We make sure to ask for confirmation to delete
 # function behind our clear_history_button. It will clear all of our data.
 def clear_all_ascents_from_history(wnd):
+    global connection
+    global cursor
     response = messagebox.askokcancel("Confirmation", "You are going to permanently delete your history." "\n"
                                                       "Are you sure you want to do this?")
     if response:
@@ -172,8 +194,11 @@ def adding_record():
     global style_entry
     global grade_entry
     global comment_entry
+    global connection
+    global cursor
     # using function to make sure that we filled the all the entry to add ascent
-    if city_entry.get() and sector_entry.get() and route_entry.get() and ascent_entry.get() and style_entry.get() and grade_entry.get():
+    if city_entry.get() and sector_entry.get() and route_entry.get() \
+            and ascent_entry.get() and style_entry.get() and grade_entry.get():
         # Creating db
         connection = sqlite3.connect("Climbing progression data.db")
         # Creating our cursor
@@ -212,6 +237,9 @@ def adding_record():
 
 # creating function that open new window when we hit the review ascent button.
 def render_review_wanted_ascent():
+    global connection
+    global cursor
+
     record_id = input_id_entry.get()
     if record_id:
         if check_for_element_in_db(record_id):
@@ -225,12 +253,11 @@ def render_review_wanted_ascent():
             # Creating our cursor
 
             cursor = connection.cursor()
-            cursor.execute("SELECT * FROM climbing_info WHERE oid = " + record_id)
+            cursor.execute("SELECT *, oid FROM climbing_info WHERE oid = " + record_id)
             results = cursor.fetchall()
 
             for result in results:
-                formatted_result = f"City:{result[0]}, Sector:{result[1]}, Route:{result[2]}, Date:{result[3]}, Style:{result[4]}, Grade:{result[5]}, Comment:{result[6]}"
-                label = Label(review_ascent, text=formatted_result, font=25)
+                label = Label(review_ascent, text=formatting_input_data(result), font=25)
 
                 label.grid(row=0, column=0)
 
@@ -247,6 +274,9 @@ def render_review_wanted_ascent():
 
 # functionality behind our show all ascents button
 def render_show_all_records():
+    global connection
+    global cursor
+
     # crating our sll records view
     all_results_window = Tk()
     all_results_window.title("All records")
@@ -292,7 +322,11 @@ def render_show_all_records():
     connection.close()
 
 
+# function behind our top_point_info_button.
 def render_get_top_rope_info():
+    global connection
+    global cursor
+
     # this is list that will be full of RP ascents(tuples)
     list_with_top_ropes = []
     top_rope_info_window = Tk()
@@ -328,8 +362,8 @@ def render_get_top_rope_info():
 
     for top_rope in list_with_top_ropes:
         # this is our formatting. That's how the user will see the RP ascents
-        curr_ascent = f"City:{top_rope[0]}, Sector: {top_rope[1]}, Route: {top_rope[2]}, Ascent: {top_rope[3]}, Grade: {top_rope[5]}, Comment: {top_rope[6]}, ID: {top_rope[7]} \n"
-        all_results_listbox.insert(END, curr_ascent)
+        all_results_listbox.insert(END, formatting_input_data(top_rope))
+        print(formatting_input_data(top_rope))
 
     # i don't know why but with grid is not working?
     all_results_listbox.pack(side=LEFT, fill=BOTH, expand=True, ipadx=200)
@@ -345,6 +379,9 @@ def render_get_top_rope_info():
 
 # function behind our red_point_info_button.
 def render_get_red_point_info():
+    global connection
+    global cursor
+
     # this is list that will be full of RP ascents(tuples)
     list_with_red_points = []
     red_point_info_window = Tk()
@@ -383,8 +420,7 @@ def render_get_red_point_info():
 
     for red_point in list_with_red_points:
         # this is our formatting. That's how the user will see the RP ascents
-        curr_ascent = f"City:{red_point[0]}, Sector: {red_point[1]}, Route: {red_point[2]}, Ascent: {red_point[3]}, Grade: {red_point[5]}, Comment: {red_point[6]}, ID: {red_point[7]} \n"
-        all_results_listbox.insert(END, curr_ascent)
+        all_results_listbox.insert(END, formatting_input_data(red_point))
 
     # i don't know why but with grid is not working?
     all_results_listbox.pack(side=LEFT, fill=BOTH, expand=True, ipadx=200)
@@ -408,6 +444,8 @@ def render_edit_ascent_view():
     global comment_entry_edit
     global input_id_entry
     global edit_window
+    global connection
+    global cursor
     record_id = input_id_entry.get()
     # we make if statement to see if we have smt in our add_id_entry
 
@@ -463,7 +501,8 @@ def render_edit_ascent_view():
             comment_entry_edit.grid(row=6, column=1, pady=10)
 
             # we create button to save the changes that we've made
-            save_changes_button = Button(edit_window, text="Save changes", borderwidth=4, command=save_info_from_add_ascent)
+            save_changes_button = Button(edit_window, text="Save changes", borderwidth=4,
+                                         command=save_info_from_add_ascent)
             save_changes_button.grid(row=7, column=1, pady=10, padx=10, ipadx=80, columnspan=2)
 
             # creating button to cancel edit_process
@@ -493,6 +532,7 @@ def render_edit_ascent_view():
         messagebox.showinfo("Error", "You have to add ascent's ID.\nClick see records to get the ID number.")
 
 
+# function for rendering option window
 def render_view_ascents_options_view():
     global input_id_entry
     if check_for_records():
@@ -525,7 +565,8 @@ def render_view_ascents_options_view():
         check_info_for_tp_btn.grid(row=3, column=1, pady=10, padx=10, ipadx=3)
 
         # creating edit button
-        button_for_edit = Button(see_data_window, text="Edit ascent", width=11, borderwidth=4, command=render_edit_ascent_view)
+        button_for_edit = Button(see_data_window, text="Edit ascent", width=11, borderwidth=4,
+                                 command=render_edit_ascent_view)
         button_for_edit.grid(row=2, column=0, pady=10, padx=10)
 
         # creating label for ascent's id
@@ -609,7 +650,6 @@ def render_add_ascent_window():
 
 
 # Function to render main view. Good if we want to go back to the main view
-# todo merged functions
 def render_main_view():
     # creating labels for main view
     welcome_label = Label(main_window, text="Climb smart or die trying" + "\n" + "beta 0.1", font=25)
@@ -618,7 +658,8 @@ def render_main_view():
     # creating buttons for our main view
     add_ascent_button = Button(main_window, text="Add ascent", borderwidth=4, command=render_add_ascent_window)
     add_ascent_button.grid(row=1, column=1, pady=10, padx=10, ipadx=50)
-    view_records_button = Button(main_window, text="See ascents", borderwidth=4, command=render_view_ascents_options_view)
+    view_records_button = Button(main_window, text="See ascents", borderwidth=4,
+                                 command=render_view_ascents_options_view)
     view_records_button.grid(row=1, column=0, pady=10, padx=10, ipadx=50)
     workout_button = Button(main_window, text="Training", borderwidth=4)
     workout_button.grid(row=2, column=1, pady=10, padx=10, ipadx=58)
