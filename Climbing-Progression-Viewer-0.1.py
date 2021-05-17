@@ -371,10 +371,11 @@ def render_get_top_rope_info():
     # config method to give functionality to our scrollbar
     scrollbar.config(command=all_results_listbox.yview)
 
-    top_rope_info_window.mainloop()
+
 
     connection.commit()
     connection.close()
+    top_rope_info_window.mainloop()
 
 
 # function behind our red_point_info_button.
@@ -427,10 +428,10 @@ def render_get_red_point_info():
 
     # config method to give functionality to our scrollbar
     scrollbar.config(command=all_results_listbox.yview)
-    red_point_info_window.mainloop()
 
     connection.commit()
     connection.close()
+    red_point_info_window.mainloop()
 
 
 # creating function to open edit_view window.
