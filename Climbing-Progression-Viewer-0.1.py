@@ -77,10 +77,18 @@ def get_top_rope_info():
     top_rope_info_window = Tk()
     # see_data_window.geometry("500x500")
     top_rope_info_window.title("Red Point info")
+    top_rope_info_window.attributes("-topmost", True)
+
+    # creating scrollbar so that we can scroll in our window if we need to
+    scrollbar = Scrollbar(top_rope_info_window)
+    # I don't know why but with grid is not working?
+    scrollbar.pack(side=RIGHT, fill=Y)
+    # Creating listbox that will contain all the records we have, yscrollcommand is like command and
+    # .set is the method that we use to attach the scrollbar to the listbox
+    all_results_listbox = Listbox(top_rope_info_window, font=20, yscrollcommand=scrollbar.set)
 
     # Creating db
     connection = sqlite3.connect("Climbing progression data.db")
-
     # Creating our cursor
     cursor = connection.cursor()
 
@@ -90,24 +98,26 @@ def get_top_rope_info():
 
     # for loop to go thru each one RP ascent that we found
     for result in results:
-
-        # We search for "RP" in our tuples. If we find "RP" in some tuple we add it to our list with tuples
-        if 'TR' in result:
+        # We search for "TR" or "tr" in our tuples. If we find it in some tuple we add it to our list with tuples
+        if 'TR' in result or "tr" in result:
             list_with_top_ropes.append(result)
 
     label_for_rp_count = Label(top_rope_info_window, text=f"You have {len(list_with_top_ropes)} top rope ascents:")
-    label_for_rp_count.grid(row=0, column=0)
+    label_for_rp_count.pack()
 
-    # list to be filled with our formatted info about RP ascents
-    all_rp_ascents = []
     for top_rope in list_with_top_ropes:
         # this is our formatting. That's how the user will see the RP ascents
         curr_ascent = f"City:{top_rope[0]}, Sector: {top_rope[1]}, Route: {top_rope[2]}, Ascent: {top_rope[3]}, Grade: {top_rope[5]}, Comment: {top_rope[6]}, ID: {top_rope[7]} \n"
-        all_rp_ascents.append(curr_ascent)
+        all_results_listbox.insert(END, curr_ascent)
 
-    # label to show all our RP ascents
-    label_for_rp_ascent = Label(top_rope_info_window, text=all_rp_ascents)
-    label_for_rp_ascent.grid(row=1, column=0)
+    # i don't know why but with grid is not working?
+    all_results_listbox.pack(side=LEFT, fill=BOTH, expand=True, ipadx=200)
+
+    # config method to give functionality to our scrollbar
+    scrollbar.config(command=all_results_listbox.yview)
+
+    top_rope_info_window.mainloop()
+
     connection.commit()
     connection.close()
 
@@ -119,6 +129,15 @@ def get_red_point_info():
     red_point_info_window = Tk()
     # see_data_window.geometry("500x500")
     red_point_info_window.title("Red Point info")
+    red_point_info_window.attributes("-topmost", True)
+
+    # creating scrollbar so that we can scroll in our window if we need to
+    scrollbar = Scrollbar(red_point_info_window)
+    # I don't know why but with grid is not working?
+    scrollbar.pack(side=RIGHT, fill=Y)
+    # Creating listbox that will contain all the records we have, yscrollcommand is like command and
+    # .set is the method that we use to attach the scrollbar to the listbox
+    all_results_listbox = Listbox(red_point_info_window, font=20, yscrollcommand=scrollbar.set)
 
     # Creating db
     connection = sqlite3.connect("Climbing progression data.db")
@@ -132,24 +151,27 @@ def get_red_point_info():
 
     # for loop to go thru each one RP ascent that we found
     for result in results:
-
         # We search for "RP" in our tuples. If we find "RP" in some tuple we add it to our list with tuples
-        if 'RP' in result:
+        if 'RP' in result or "rp" in result:
             list_with_red_points.append(result)
 
     label_for_rp_count = Label(red_point_info_window, text=f"You have {len(list_with_red_points)} red point ascents:")
-    label_for_rp_count.grid(row=0, column=0)
+    label_for_rp_count.pack()
 
     # list to be filled with our formatted info about RP ascents
-    all_rp_ascents = []
+
     for red_point in list_with_red_points:
         # this is our formatting. That's how the user will see the RP ascents
         curr_ascent = f"City:{red_point[0]}, Sector: {red_point[1]}, Route: {red_point[2]}, Ascent: {red_point[3]}, Grade: {red_point[5]}, Comment: {red_point[6]}, ID: {red_point[7]} \n"
-        all_rp_ascents.append(curr_ascent)
+        all_results_listbox.insert(END, curr_ascent)
 
-    # label to show all our RP ascents
-    label_for_rp_ascent = Label(red_point_info_window, text=all_rp_ascents)
-    label_for_rp_ascent.grid(row=1, column=0)
+    # i don't know why but with grid is not working?
+    all_results_listbox.pack(side=LEFT, fill=BOTH, expand=True, ipadx=200)
+
+    # config method to give functionality to our scrollbar
+    scrollbar.config(command=all_results_listbox.yview)
+    red_point_info_window.mainloop()
+
     connection.commit()
     connection.close()
 
@@ -570,7 +592,7 @@ def render_see_record_view():
 
         # creating button to delete all history
         clear_all_ascents_btn = Button(see_data_window, text="Delete history", width=11, borderwidth=4, bg="#ff5c5c",
-                                       command=lambda :clearing_record(see_data_window))
+                                       command=lambda: clearing_record(see_data_window))
         clear_all_ascents_btn.grid(row=4, column=0, pady=10, padx=10)
 
         see_data_window.mainloop()
@@ -605,7 +627,6 @@ def render_main_view():
     workout_button.grid(row=2, column=1, pady=10, padx=10, ipadx=58)
     projects_button = Button(main_window, text="Projects", borderwidth=4)
     projects_button.grid(row=2, column=0, pady=10, padx=10, ipadx=58)
-
 
 
 # From here our program start
